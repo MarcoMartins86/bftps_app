@@ -1,6 +1,6 @@
 # Basic FTP Server
 
-## Works on:
+### Works on:
 
 - 3DS
 - Linux
