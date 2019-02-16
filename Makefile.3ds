@@ -11,13 +11,13 @@ include $(DEVKITARM)/3ds_rules
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
-# BUILD is the directory where object files & intermediate files will be placed
+# BUILDFOLDER is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
 # DATA is a list of directories containing data files
 # INCLUDES is a list of directories containing header files
 # GRAPHICS is a list of directories containing graphics files
 # GFXBUILD is the directory where converted graphics files will be placed
-#   If set to $(BUILD), it will statically link in the converted
+#   If set to $(BUILDFOLDER), it will statically link in the converted
 #   files as if they were data files.
 #
 # NO_SMDH: if set to anything, no SMDH file is generated.
@@ -32,32 +32,50 @@ include $(DEVKITARM)/3ds_rules
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
-BUILD		:=	build
+BUILDFOLDER	:=	build_3ds
 SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
 GRAPHICS	:=	gfx
-GFXBUILD	:=	$(BUILD)
+GFXBUILD	:=	$(BUILDFOLDER)
 #ROMFS		:=	romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
+BUILD		:=	release
 
-CFLAGS	:=	-g -Wall -Wextra -O3 -mword-relocations \
+ARCH		:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
+
+cflags.debug 	:=	-g -O0 -D_DEBUG
+cflags.release 	:=	-g0 -O3
+
+CFLAGS		:=	-Wall -Wextra -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
-			$(ARCH) -D_DEBUG
+			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
+
+CFLAGS 		+= 	${cflags.${BUILD}}
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
-ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
+asflags.debug 	:=	-g
+asflags.release :=	-g0
 
-LIBS	:= -lbftps -lctru -lm 
+ASFLAGS		:=	$(ARCH)
+
+ASFLAGS 	+= 	${asflags.${BUILD}}
+
+ldflags.debug 	:=	-g
+ldflags.release :=	-g0
+
+LDFLAGS		=	-specs=3dsx.specs $(ARCH) -Wl,-Map,$(notdir $*.map)
+
+LDFLAGS 	+= 	${ldflags.${BUILD}}
+
+LIBS		:= 	-lbftps -lctru -lm 
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -70,7 +88,7 @@ LIBDIRS	:= $(CTRULIB) $(CURDIR)/bftps
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
 #---------------------------------------------------------------------------------
-ifneq ($(BUILD),$(notdir $(CURDIR)))
+ifneq ($(BUILDFOLDER),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
@@ -80,7 +98,7 @@ export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 			$(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir)) \
 			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
-export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+export DEPSDIR	:=	$(CURDIR)/$(BUILDFOLDER)
 
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
@@ -105,14 +123,14 @@ endif
 #---------------------------------------------------------------------------------
 
 #---------------------------------------------------------------------------------
-ifeq ($(GFXBUILD),$(BUILD))
+ifeq ($(GFXBUILD),$(BUILDFOLDER))
 #---------------------------------------------------------------------------------
 export T3XFILES :=  $(GFXFILES:.t3s=.t3x)
 #---------------------------------------------------------------------------------
 else
 #---------------------------------------------------------------------------------
 export ROMFS_T3XFILES	:=	$(patsubst %.t3s, $(GFXBUILD)/%.t3x, $(GFXFILES))
-export T3XHFILES		:=	$(patsubst %.t3s, $(BUILD)/%.h, $(GFXFILES))
+export T3XHFILES		:=	$(patsubst %.t3s, $(BUILDFOLDER)/%.h, $(GFXFILES))
 #---------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------
@@ -131,7 +149,7 @@ export HFILES	:=	$(PICAFILES:.v.pica=_shbin.h) $(SHLISTFILES:.shlist=_shbin.h) \
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-			-I$(CURDIR)/$(BUILD)
+			-I$(CURDIR)/$(BUILDFOLDER)
 
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
@@ -161,18 +179,18 @@ endif
 .PHONY: all clean
 
 #---------------------------------------------------------------------------------
-all: $(BUILD) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.3ds
+all: $(BUILDFOLDER) $(GFXBUILD) $(DEPSDIR) $(ROMFS_T3XFILES) $(T3XHFILES)
+	@$(MAKE) --no-print-directory -C $(BUILDFOLDER) -f $(CURDIR)/Makefile.3ds
 
-$(BUILD):
+$(BUILDFOLDER):
 	@mkdir -p $@
 
-ifneq ($(GFXBUILD),$(BUILD))
+ifneq ($(GFXBUILD),$(BUILDFOLDER))
 $(GFXBUILD):
 	@mkdir -p $@
 endif
 
-ifneq ($(DEPSDIR),$(BUILD))
+ifneq ($(DEPSDIR),$(BUILDFOLDER))
 $(DEPSDIR):
 	@mkdir -p $@
 endif
@@ -180,13 +198,13 @@ endif
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean 3ds ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(GFXBUILD)
+	@rm -fr $(BUILDFOLDER) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(GFXBUILD)
 
 #---------------------------------------------------------------------------------
-$(GFXBUILD)/%.t3x	$(BUILD)/%.h	:	%.t3s
+$(GFXBUILD)/%.t3x	$(BUILDFOLDER)/%.h	:	%.t3s
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
-	@tex3ds -i $< -H $(BUILD)/$*.h -d $(DEPSDIR)/$*.d -o $(GFXBUILD)/$*.t3x
+	@tex3ds -i $< -H $(BUILDFOLDER)/$*.h -d $(DEPSDIR)/$*.d -o $(GFXBUILD)/$*.t3x
 
 #---------------------------------------------------------------------------------
 else

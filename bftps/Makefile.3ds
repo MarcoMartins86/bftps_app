@@ -10,13 +10,13 @@ include $(DEVKITARM)/3ds_rules
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
-# BUILD is the directory where object files & intermediate files will be placed
+# BUILDFOLDER is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
 # DATA is a list of directories containing data files
 # INCLUDES is a list of directories containing header files
 #---------------------------------------------------------------------------------
 TARGET		:=	$(shell basename $(CURDIR))
-BUILD		:=	build
+BUILDFOLDER	:=	build_3ds
 SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
@@ -24,19 +24,31 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
+BUILD		:=	release
 
-CFLAGS	:=	-fPIC -g -Wall -O3 -Wno-missing-braces -mword-relocations \
+ARCH		:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
+
+cflags.debug 	:=	-g -O0 -D_DEBUG
+cflags.release 	:=	-g0 -O3
+
+CFLAGS		:=	-fPIC -Wall -Wno-missing-braces -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections \
-			-Wno-format-overflow $(ARCH) -D_DEBUG
+			-Wno-format-overflow $(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -D_LARGEFILE64_SOURCE \
+CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS -D_LARGEFILE64_SOURCE \
 			-D_FILE_OFFSET_BITS=64 -D__LARGE64_FILES \
                         -D_USE_FD_TRANSFER
 
+CFLAGS 		+= 	${cflags.${BUILD}}
+
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
 
-ASFLAGS	:=	-g $(ARCH)
+asflags.debug 	:=	-g
+asflags.release :=	-g0
+
+ASFLAGS		:=	$(ARCH)
+
+ASFLAGS 	+= 	${asflags.${BUILD}}
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -48,7 +60,7 @@ LIBDIRS	:=	$(CTRULIB)
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
 #---------------------------------------------------------------------------------
-ifneq ($(BUILD),$(notdir $(CURDIR)))
+ifneq ($(BUILDFOLDER),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
 export OUTPUT	:=	$(CURDIR)/lib/lib$(TARGET).a
@@ -56,7 +68,7 @@ export OUTPUT	:=	$(CURDIR)/lib/lib$(TARGET).a
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
-export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+export DEPSDIR	:=	$(CURDIR)/$(BUILDFOLDER)
 
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
@@ -82,24 +94,24 @@ export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-			-I$(CURDIR)/$(BUILD)
+			-I$(CURDIR)/$(BUILDFOLDER)
 
-.PHONY: $(BUILD) clean all
+.PHONY: $(BUILDFOLDER) clean all
 
 #---------------------------------------------------------------------------------
-all: $(BUILD)
+all: $(BUILDFOLDER)
 
 lib:
 	@[ -d $@ ] || mkdir -p $@
 	
-$(BUILD): lib
+$(BUILDFOLDER): lib
 	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.3ds
+	@$(MAKE) --no-print-directory -C $(BUILDFOLDER) -f $(CURDIR)/Makefile.3ds
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean 3ds ...
-	@rm -fr $(BUILD) lib
+	@rm -fr $(BUILDFOLDER) lib
 
 #---------------------------------------------------------------------------------
 else

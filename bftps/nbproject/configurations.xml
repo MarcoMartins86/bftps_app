@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="source">
+        <in>bftps.c</in>
+        <in>bftps_command.c</in>
+        <in>bftps_common.c</in>
+        <in>bftps_session.c</in>
+        <in>bftps_socket.c</in>
+        <in>bftps_transfer_dir.c</in>
+        <in>bftps_transfer_file.c</in>
+        <in>event.c</in>
+        <in>file_io.c</in>
+        <in>thread.c</in>
+        <in>time.c</in>
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>nbproject/private/launcher.properties</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>.</Elem>
+  </sourceRootList>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="3ds_debug" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile 3ds_debug</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath></executablePath>
+          <cTool>
+            <preprocessorList>
+              <Elem>_3DS</Elem>
+              <Elem>_DEBUG</Elem>
+            </preprocessorList>
+          </cTool>
+          <ccTool>
+            <preprocessorList>
+              <Elem>_3DS</Elem>
+              <Elem>_DEBUG</Elem>
+            </preprocessorList>
+          </ccTool>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="source/bftps.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_command.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_common.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_session.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_socket.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_transfer_dir.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_transfer_file.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/event.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/file_io.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/thread.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/time.c" ex="false" tool="0" flavor2="9">
+      </item>
+    </conf>
+    <conf name="3ds_release" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile 3ds_release</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath></executablePath>
+          <cTool>
+            <preprocessorList>
+              <Elem>_3DS</Elem>
+            </preprocessorList>
+          </cTool>
+          <ccTool>
+            <preprocessorList>
+              <Elem>_3DS</Elem>
+            </preprocessorList>
+          </ccTool>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="source/bftps.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_command.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_common.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_session.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_socket.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_transfer_dir.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/bftps_transfer_file.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/event.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/file_io.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/thread.c" ex="false" tool="0" flavor2="9">
+      </item>
+      <item path="source/time.c" ex="false" tool="0" flavor2="9">
+      </item>
+    </conf>
+    <conf name="linux_debug" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-fPIC -g"/>
+      </flagsDictionary>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} linux_debug</buildCommand>
+          <cleanCommand>${MAKE} clean</cleanCommand>
+          <executablePath></executablePath>
+          <cTool>
+            <incDir>
+              <pElem>include</pElem>
+              <pElem>build_linux</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>_DEBUG</Elem>
+              <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGEFILE64_SOURCE</Elem>
+              <Elem>__LARGE64_FILES</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="source/bftps.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_command.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_common.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_session.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_socket.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_transfer_dir.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_transfer_file.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/event.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/file_io.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/thread.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/time.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+    </conf>
+    <conf name="linux_release" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-fPIC -O3"/>
+      </flagsDictionary>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>.</buildCommandWorkingDir>
+          <buildCommand>${MAKE} linux_release</buildCommand>
+          <cleanCommand>${MAKE} clean</cleanCommand>
+          <executablePath></executablePath>
+          <cTool>
+            <incDir>
+              <pElem>include</pElem>
+              <pElem>release</pElem>
+              <pElem>build_linux</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGEFILE64_SOURCE</Elem>
+              <Elem>__LARGE64_FILES</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+        <preBuild>
+          <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
+          <preBuildCommand></preBuildCommand>
+        </preBuild>
+      </makefileType>
+      <item path="source/bftps.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_command.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_common.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_session.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_socket.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_transfer_dir.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/bftps_transfer_file.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/event.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/file_io.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/thread.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="source/time.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="0">
+        </cTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

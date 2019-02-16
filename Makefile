@@ -1,13 +1,19 @@
 .PHONY: all linux 3ds clean
 
 all:
-	@echo please choose 3ds, linux
-3ds: 
-	@$(MAKE) -C bftps -f Makefile 3ds
+	@echo please choose 3ds_release, 3ds_debug, linux_release, linux_debug
+3ds_release: 
+	@$(MAKE) -C bftps -f Makefile 	3ds_release
 	@$(MAKE) -f Makefile.3ds
-linux:
-	@$(MAKE) -C bftps -f Makefile linux 
+3ds_debug: 
+	@$(MAKE) -C bftps -f Makefile 	3ds_debug
+	@$(MAKE) -f Makefile.3ds	BUILD=debug
+linux_release:
+	@$(MAKE) -C bftps -f Makefile 	linux_release 
 	@$(MAKE) -f Makefile.linux
+linux_debug:
+	@$(MAKE) -C bftps -f Makefile 	linux_debug 
+	@$(MAKE) -f Makefile.linux 	BUILD=debug
 clean:
 	@$(MAKE) -C bftps -f Makefile	clean
 	@$(MAKE) -f Makefile.3ds 	clean

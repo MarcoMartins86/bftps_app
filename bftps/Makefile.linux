@@ -5,25 +5,32 @@ TOPDIR ?= $(CURDIR)
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
-# BUILD is the directory where object files & intermediate files will be placed
+# BUILDFOLDER is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing header files
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
-BUILD		:=	build
+BUILDFOLDER	:=	build_linux
 SOURCES		:=	source
 INCLUDES	:=	include
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS	:=	-fPIC -g -Wall -O0 \
+BUILD		:=	release
+
+cflags.debug 	:=	-g -O0 -D_DEBUG
+cflags.release 	:=	-g0 -O3
+
+CFLAGS		:=	-fPIC -Wall \
 			-fomit-frame-pointer -ffunction-sections
 
-CFLAGS	+=	$(INCLUDE) -Wno-missing-braces -D_LARGEFILE64_SOURCE \
-			-D_FILE_OFFSET_BITS=64 -D__LARGE64_FILES -D_DEBUG 
+CFLAGS		+=	$(INCLUDE) -Wno-missing-braces -D_LARGEFILE64_SOURCE \
+			-D_FILE_OFFSET_BITS=64 -D__LARGE64_FILES 
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11	
+CFLAGS 		+= 	${cflags.${BUILD}}
+
+CXXFLAGS	:= 	$(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11	
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -36,7 +43,7 @@ LIBDIRS	:=
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
 #---------------------------------------------------------------------------------
-ifneq ($(BUILD),$(notdir $(CURDIR)))
+ifneq ($(BUILDFOLDER),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 export OUTPUT	:=	$(CURDIR)/lib/lib$(TARGET).a
 export TOPDIR	:=	$(CURDIR)
@@ -66,22 +73,22 @@ export OFILES	:= 	$(OFILES_SOURCES)
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-			-I$(CURDIR)/$(BUILD)
+			-I$(CURDIR)/$(BUILDFOLDER)
 
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
 .PHONY: all clean
 #---------------------------------------------------------------------------------
-all: $(BUILD)
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.linux
-$(BUILD): lib	
+all: $(BUILDFOLDER)
+	@$(MAKE) --no-print-directory -C $(BUILDFOLDER) -f $(CURDIR)/Makefile.linux
+$(BUILDFOLDER): lib	
 	@mkdir -p $@
 lib:
 	@mkdir -p $@
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean linux ...
-	@rm -fr $(BUILD) lib
+	@rm -fr $(BUILDFOLDER) lib
 #---------------------------------------------------------------------------------
 else
 #---------------------------------------------------------------------------------

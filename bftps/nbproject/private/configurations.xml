@@ -2,48 +2,39 @@
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
-      <df name="bftps">
-        <df name="build_3ds">
-        </df>
-        <df name="include">
-          <in>bftps.h</in>
-        </df>
-        <df name="lib">
-        </df>
-        <df name="source">
-          <in>atomic.h</in>
-          <in>bftps.c</in>
-          <in>bftps_command.c</in>
-          <in>bftps_command.h</in>
-          <in>bftps_common.c</in>
-          <in>bftps_common.h</in>
-          <in>bftps_session.c</in>
-          <in>bftps_session.h</in>
-          <in>bftps_socket.c</in>
-          <in>bftps_socket.h</in>
-          <in>bftps_transfer.h</in>
-          <in>bftps_transfer_dir.c</in>
-          <in>bftps_transfer_dir.h</in>
-          <in>bftps_transfer_file.c</in>
-          <in>bftps_transfer_file.h</in>
-          <in>bool.h</in>
-          <in>event.c</in>
-          <in>event.h</in>
-          <in>file_io.c</in>
-          <in>file_io.h</in>
-          <in>macros.h</in>
-          <in>thread.c</in>
-          <in>thread.h</in>
-          <in>time.c</in>
-          <in>time.h</in>
-        </df>
-      </df>
-      <df name="build">
-      </df>
       <df name="build_3ds">
       </df>
+      <df name="include">
+        <in>bftps.h</in>
+      </df>
+      <df name="lib">
+      </df>
       <df name="source">
-        <in>main.c</in>
+        <in>atomic.h</in>
+        <in>bftps.c</in>
+        <in>bftps_command.c</in>
+        <in>bftps_command.h</in>
+        <in>bftps_common.c</in>
+        <in>bftps_common.h</in>
+        <in>bftps_session.c</in>
+        <in>bftps_session.h</in>
+        <in>bftps_socket.c</in>
+        <in>bftps_socket.h</in>
+        <in>bftps_transfer.h</in>
+        <in>bftps_transfer_dir.c</in>
+        <in>bftps_transfer_dir.h</in>
+        <in>bftps_transfer_file.c</in>
+        <in>bftps_transfer_file.h</in>
+        <in>bool.h</in>
+        <in>event.c</in>
+        <in>event.h</in>
+        <in>file_io.c</in>
+        <in>file_io.h</in>
+        <in>macros.h</in>
+        <in>thread.c</in>
+        <in>thread.h</in>
+        <in>time.c</in>
+        <in>time.h</in>
       </df>
     </df>
   </logicalFolder>
@@ -146,13 +137,13 @@
       </toolsSet>
       <compile>
         <compiledirpicklist>
-          <compiledirpicklistitem>.</compiledirpicklistitem>
           <compiledirpicklistitem>${AUTO_FOLDER}</compiledirpicklistitem>
+          <compiledirpicklistitem>.</compiledirpicklistitem>
         </compiledirpicklist>
         <compiledir>${AUTO_FOLDER}</compiledir>
         <compilecommandpicklist>
-          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
           <compilecommandpicklistitem>${AUTO_COMPILE}</compilecommandpicklistitem>
+          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
         </compilecommandpicklist>
         <compilecommand>${AUTO_COMPILE}</compilecommand>
       </compile>
@@ -162,8 +153,6 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
-        <gdb_signals>
-        </gdb_signals>
         <gdb_options>
           <DebugOptions>
           </DebugOptions>
@@ -178,7 +167,7 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
         </runcommandpicklist>
         <runcommand>"${OUTPUT_PATH}"</runcommand>
-        <rundir>.</rundir>
+        <rundir></rundir>
         <buildfirst>false</buildfirst>
         <terminal-type>0</terminal-type>
         <remove-instrumentation>0</remove-instrumentation>
@@ -193,13 +182,13 @@
       </toolsSet>
       <compile>
         <compiledirpicklist>
-          <compiledirpicklistitem>.</compiledirpicklistitem>
           <compiledirpicklistitem>${AUTO_FOLDER}</compiledirpicklistitem>
+          <compiledirpicklistitem>.</compiledirpicklistitem>
         </compiledirpicklist>
         <compiledir>${AUTO_FOLDER}</compiledir>
         <compilecommandpicklist>
-          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
           <compilecommandpicklistitem>${AUTO_COMPILE}</compilecommandpicklistitem>
+          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
         </compilecommandpicklist>
         <compilecommand>${AUTO_COMPILE}</compilecommand>
       </compile>
@@ -209,8 +198,6 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
-        <gdb_signals>
-        </gdb_signals>
         <gdb_options>
           <DebugOptions>
           </DebugOptions>
@@ -225,7 +212,7 @@
           <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
         </runcommandpicklist>
         <runcommand>"${OUTPUT_PATH}"</runcommand>
-        <rundir>.</rundir>
+        <rundir></rundir>
         <buildfirst>false</buildfirst>
         <terminal-type>0</terminal-type>
         <remove-instrumentation>0</remove-instrumentation>
