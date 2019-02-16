@@ -50,5 +50,10 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-/bftps/build/
-/build/
+/bftps/build_3ds/
+/bftps/build_linux/
+/build_3ds/
+/build_linux/
+*.3dsx
+*.smdh
+bftps_app

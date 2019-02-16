@@ -546,7 +546,6 @@
         <cTool>
           <incDir>
             <pElem>bftps/include</pElem>
-            <pElem>bftps/debug</pElem>
             <pElem>bftps/build_linux</pElem>
           </incDir>
           <preprocessorList>
@@ -561,7 +560,6 @@
           <incDir>
             <pElem>include</pElem>
             <pElem>bftps/include</pElem>
-            <pElem>debug</pElem>
             <pElem>build_linux</pElem>
           </incDir>
         </cTool>
@@ -643,7 +641,6 @@
         <cTool>
           <incDir>
             <pElem>bftps/include</pElem>
-            <pElem>bftps/release</pElem>
             <pElem>bftps/build_linux</pElem>
           </incDir>
           <preprocessorList>
@@ -658,7 +655,6 @@
           <incDir>
             <pElem>include</pElem>
             <pElem>bftps/include</pElem>
-            <pElem>release</pElem>
             <pElem>build_linux</pElem>
           </incDir>
         </cTool>

@@ -5,18 +5,12 @@
     </code-assistance-data>
     <data xmlns="http://www.netbeans.org/ns/make-project-private/1">
         <activeConfTypeElem>0</activeConfTypeElem>
-        <activeConfIndexElem>1</activeConfIndexElem>
+        <activeConfIndexElem>3</activeConfIndexElem>
     </data>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/marco/Desktop/bftps_app/source/main.c</file>
-            <file>file:/home/marco/Desktop/bftps_app/bftps/source/bftps_transfer_dir.c</file>
-            <file>file:/home/marco/Desktop/bftps_app/bftps/source/macros.h</file>
-            <file>file:/home/marco/Desktop/bftps_app/bftps/source/thread.h</file>
-            <file>file:/home/marco/Desktop/bftps_app/bftps/source/bftps_common.c</file>
-            <file>file:/home/marco/Desktop/bftps_app/bftps/source/bftps_transfer_file.c</file>
-            <file>file:/home/marco/Desktop/bftps_app/bftps/source/bftps_command.c</file>
+            <file>file:/home/marco/Documents/GitHub/bftps_app/source/main.c</file>
         </group>
     </open-files>
 </project-private>
