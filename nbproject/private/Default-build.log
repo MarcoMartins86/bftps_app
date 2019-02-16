@@ -1,0 +1,5 @@
+main.c
+arm-none-eabi-gcc -MMD -MP -MF /home/marco/Desktop/bftps_app/build/main.d -g -Wall -O2 -mword-relocations -fomit-frame-pointer -ffunction-sections -march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft -I/home/marco/Desktop/bftps_app/include -I/opt/devkitpro/libctru/include -I/home/marco/Desktop/bftps_app/build -DARM11 -D_3DS -c /home/marco/Desktop/bftps_app/source/main.c -o main.o 
+linking bftps_app.elf
+built ... bftps_app.smdh
+built ... bftps_app.3dsx
