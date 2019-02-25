@@ -20,8 +20,9 @@ extern "C" {
 
 #ifdef __GNUC__
 
-#define atomic_increase(x) __sync_fetch_and_add(x,1)
-#define atomic_decrease(x) __sync_fetch_and_sub(x,1)
+//#define atomic_increase(x) __sync_fetch_and_add(x,1)
+//#define atomic_decrease(x) __sync_fetch_and_sub(x,1)
+#define atomic_compare_swap(ptr, oldval, newval) __sync_bool_compare_and_swap(ptr, oldval,newval)
     
 #endif
 

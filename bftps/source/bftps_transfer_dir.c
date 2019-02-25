@@ -411,7 +411,7 @@ bftps_transfer_loop_status_t bftps_transfer_dir_list(
     // send any pending data
     ssize_t result = send(session->dataFd, session->dataBuffer +
             session->dataBufferPosition, session->dataBufferSize -
-            session->dataBufferPosition, MSG_DONTWAIT | MSG_NOSIGNAL);
+            session->dataBufferPosition, MSG_NOSIGNAL);
     if (result <= 0) {
         // error sending data
         if (result < 0) {

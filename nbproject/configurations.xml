@@ -44,6 +44,7 @@
       <flagsDictionary>
         <element flagsID="0" commonFlags="-mtune=mpcore -march=armv6k -g -O2"/>
         <element flagsID="1" commonFlags="-mtune=mpcore -march=armv6k -g -O3 -fPIC"/>
+        <element flagsID="2" commonFlags="-mtune=mpcore -march=armv6k -g -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -53,18 +54,6 @@
           <buildCommand>${MAKE} -f Makefile 3ds_debug</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
-          <cTool>
-            <preprocessorList>
-              <Elem>_3DS</Elem>
-              <Elem>_DEBUG</Elem>
-            </preprocessorList>
-          </cTool>
-          <ccTool>
-            <preprocessorList>
-              <Elem>_3DS</Elem>
-              <Elem>_DEBUG</Elem>
-            </preprocessorList>
-          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
@@ -74,6 +63,7 @@
       <item path="bftps/source/bftps.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
           <incDir>
+            <pElem>bftps/source</pElem>
             <pElem>/opt/devkitpro/libctru/include/arpa</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/machine</pElem>
             <pElem>/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/8.2.0/include</pElem>
@@ -89,12 +79,17 @@
             <pElem>/opt/devkitpro/libctru/include/3ds/applets</pElem>
             <pElem>bftps/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>_3DS</Elem>
+            <Elem>_DEBUG</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="bftps/source/bftps_command.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
+        <cTool flags="2">
           <incDir>
             <pElem>/opt/devkitpro/libctru/include/arpa</pElem>
+            <pElem>bftps/source</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/machine</pElem>
             <pElem>/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/8.2.0/include</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include</pElem>
@@ -107,13 +102,14 @@
             <pElem>/opt/devkitpro/libctru/include/3ds/ndsp</pElem>
             <pElem>/opt/devkitpro/libctru/include/3ds/applets</pElem>
             <pElem>/opt/devkitpro/libctru/include</pElem>
-            <pElem>bftps/build</pElem>
+            <pElem>bftps/build_3ds</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="bftps/source/bftps_common.c" ex="false" tool="0" flavor2="3">
         <cTool flags="1">
           <incDir>
+            <pElem>bftps/source</pElem>
             <pElem>/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/8.2.0/include</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/machine</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/sys</pElem>
@@ -126,11 +122,17 @@
             <pElem>/opt/devkitpro/libctru/include</pElem>
             <pElem>bftps/build</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>_3DS</Elem>
+            <Elem>_DEBUG</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="bftps/source/bftps_session.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
+        <cTool flags="2">
           <incDir>
+            <pElem>/opt/devkitpro/libctru/include/arpa</pElem>
+            <pElem>bftps/source</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/machine</pElem>
             <pElem>/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/8.2.0/include</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/sys</pElem>
@@ -141,13 +143,15 @@
             <pElem>/opt/devkitpro/libctru/include</pElem>
             <pElem>/opt/devkitpro/libctru/include/3ds/services</pElem>
             <pElem>/opt/devkitpro/libctru/include/3ds/gpu</pElem>
-            <pElem>bftps/build</pElem>
+            <pElem>bftps/build_3ds</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="bftps/source/bftps_socket.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
+        <cTool flags="2">
           <incDir>
+            <pElem>/opt/devkitpro/libctru/include/arpa</pElem>
+            <pElem>bftps/source</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/machine</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/sys</pElem>
             <pElem>/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/8.2.0/include</pElem>
@@ -155,13 +159,14 @@
             <pElem>/opt/devkitpro/libctru/include/sys</pElem>
             <pElem>/opt/devkitpro/libctru/include/netinet</pElem>
             <pElem>/opt/devkitpro/libctru/include</pElem>
-            <pElem>bftps/build</pElem>
+            <pElem>bftps/build_3ds</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="bftps/source/bftps_transfer_dir.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
+        <cTool flags="2">
           <incDir>
+            <pElem>bftps/source</pElem>
             <pElem>/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/8.2.0/include</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/machine</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/sys</pElem>
@@ -172,13 +177,14 @@
             <pElem>/opt/devkitpro/libctru/include/netinet</pElem>
             <pElem>/opt/devkitpro/libctru/include/3ds/gpu</pElem>
             <pElem>/opt/devkitpro/libctru/include</pElem>
-            <pElem>bftps/build</pElem>
+            <pElem>bftps/build_3ds</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="bftps/source/event.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
+        <cTool flags="2">
           <incDir>
+            <pElem>bftps/source</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/machine</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/sys</pElem>
             <pElem>/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/8.2.0/include</pElem>
@@ -187,13 +193,14 @@
             <pElem>/opt/devkitpro/libctru/include/3ds/services</pElem>
             <pElem>/opt/devkitpro/libctru/include/3ds/gpu</pElem>
             <pElem>/opt/devkitpro/libctru/include</pElem>
-            <pElem>bftps/build</pElem>
+            <pElem>bftps/build_3ds</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="bftps/source/file_io.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
+        <cTool flags="2">
           <incDir>
+            <pElem>bftps/source</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/machine</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/sys</pElem>
             <pElem>/opt/devkitpro/devkitARM/lib/gcc/arm-none-eabi/8.2.0/include</pElem>
@@ -202,13 +209,14 @@
             <pElem>/opt/devkitpro/libctru/include/3ds/services</pElem>
             <pElem>/opt/devkitpro/libctru/include/3ds/gpu</pElem>
             <pElem>/opt/devkitpro/libctru/include</pElem>
-            <pElem>bftps/build</pElem>
+            <pElem>bftps/build_3ds</pElem>
           </incDir>
         </cTool>
       </item>
       <item path="bftps/source/time.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="1">
+        <cTool flags="2">
           <incDir>
+            <pElem>bftps/source</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/machine</pElem>
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include/sys</pElem>
             <pElem>/opt/devkitpro/libctru/include/3ds</pElem>
@@ -217,7 +225,7 @@
             <pElem>/opt/devkitpro/devkitARM/arm-none-eabi/include</pElem>
             <pElem>/opt/devkitpro/libctru/include/3ds/gpu</pElem>
             <pElem>/opt/devkitpro/libctru/include</pElem>
-            <pElem>bftps/build</pElem>
+            <pElem>bftps/build_3ds</pElem>
           </incDir>
         </cTool>
       </item>
@@ -492,6 +500,11 @@
               <Elem>_DEBUG</Elem>
             </preprocessorList>
           </cTool>
+          <ccTool>
+            <preprocessorList>
+              <Elem>_DEBUG</Elem>
+            </preprocessorList>
+          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>

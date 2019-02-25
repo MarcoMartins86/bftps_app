@@ -6,9 +6,9 @@
 
 #include "time.h"
 
-void time_sleep(int time_ms) {
+void time_sleep(unsigned int time_ms) {
 #ifdef __linux__
-    usleep(time_ms * 1000);
+    usleep((__useconds_t)time_ms * (__useconds_t)1000/*us*/);
 #elif _3DS
     s64 time_ns = (s64) time_ms * (s64) 1000 /*us*/ * (s64) 1000 /*ns*/;
     svcSleepThread(time_ns);

@@ -190,7 +190,7 @@ int bftps_command_send_response_buffer(bftps_session_context_t *session,
 
     // send command
     CONSOLE_LOG_INLINE("%s", buffer);
-    ssize_t result = send(session->commandFd, buffer, length, MSG_DONTWAIT | MSG_NOSIGNAL);
+    ssize_t result = send(session->commandFd, buffer, length, MSG_NOSIGNAL);
     if (0 > result) {
         nErrorCode = errno;
         CONSOLE_LOG("Failed to send command [%s]: %d %s", buffer, nErrorCode, strerror(nErrorCode));

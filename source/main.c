@@ -39,14 +39,46 @@ int main(int argc, char* argv[]) {
         // Your code goes here
         u32 kDown = hidKeysDown();
         if (kDown & KEY_START)
-            break; // break in order to return to hbmenu       
+            break; // break in order to return to hbmenu     
+        usleep(50000);
+        const bftps_file_transfer_t* info = bftps_file_transfer_retrieve();
+        if (info) {
+            const bftps_file_transfer_t* aux = info;
+            while(aux) {
+                if(aux->mode == FILE_SENDING)
+                    printf("Sending [%s] %f%%\n", aux->name, 
+                            ((double)aux->filePosition / (double)aux->fileSize) * (double)100);
+                else
+                    printf("Receiving [%s] %fMB\n", aux->name, 
+                            ((double)aux->filePosition / ((double)1024 * (double)1024)) );
+                aux = aux->next;
+            }
+            bftps_file_transfer_cleanup(info);
+        }
     }
     printf("EXITING\n");
     bftps_stop();
 #elif __linux__
     // on linux we will just sleep indefinitely on this thread
     bftps_start();
-    sleep(INT_MAX);
+    printf("%s\n",bftps_name());
+    while (1) {
+        usleep(150000);
+        const bftps_file_transfer_t* info = bftps_file_transfer_retrieve();
+        if (info) {
+            const bftps_file_transfer_t* aux = info;
+            while(aux) {
+                if(aux->mode == FILE_SENDING)
+                    printf("Sending [%s] %f%%\n", aux->name, 
+                            ((double)aux->filePosition / (double)aux->fileSize) * (double)100);
+                else
+                    printf("Receiving [%s] %fMB\n", aux->name, 
+                            ((double)aux->filePosition / ((double)1024 * (double)1024)) );
+                aux = aux->next;
+            }
+            bftps_file_transfer_cleanup(info);
+        }
+    }    
     bftps_stop();
 #endif        
 #ifdef _3DS

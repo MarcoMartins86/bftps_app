@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <string.h>
 #ifdef _3DS
 #include <3ds.h>
 // TODO check if there is really no lseek64
@@ -20,6 +21,8 @@
 
 //32 MB
 #define BIG_FILE_TRESHOLD 32 * 1024 * 1024 
+
+extern void bftps_file_transfer_store(bftps_session_context_t* session);
 
 // open file for reading for ftp session
 
@@ -148,6 +151,8 @@ static ssize_t bftps_transfer_file_read(bftps_session_context_t *session) {
 
     // adjust file position
     session->filepos += rc;
+    
+    bftps_file_transfer_store(session);
 
     return rc;
 }
@@ -176,13 +181,15 @@ ssize_t bftps_transfer_file_write(bftps_session_context_t *session) {
     session->filepos += rc;
 
     bftps_common_update_free_space(session);
+    bftps_file_transfer_store(session);
+    
     return rc;
 }
 
 // send a file to the client
 bftps_transfer_loop_status_t bftps_transfer_file_retrieve(bftps_session_context_t *session) {
     ssize_t rc;
-    
+  /*  
     if (true == session->fileBig) {
         int nErrorCode = 0;
         if (session->fileBigIO == NULL) {
@@ -210,7 +217,7 @@ bftps_transfer_loop_status_t bftps_transfer_file_retrieve(bftps_session_context_
         }
 
         return BFTPS_TRANSFER_LOOP_STATUS_EXIT;
-    } else {
+    } else {*/
         if (session->dataBufferPosition == session->dataBufferSize) {
             // we have sent all the data so read some more
             rc = bftps_transfer_file_read(session);
@@ -234,7 +241,7 @@ bftps_transfer_loop_status_t bftps_transfer_file_retrieve(bftps_session_context_
         int nErrorCode = 0;
         // send any pending data
         rc = send(session->dataFd, session->dataBuffer + session->dataBufferPosition,
-                session->dataBufferSize - session->dataBufferPosition, 0/*MSG_DONTWAIT | MSG_NOSIGNAL*/);
+                session->dataBufferSize - session->dataBufferPosition, MSG_NOSIGNAL);
         if (0 >= rc) {
             // error sending data
             if (0 > rc) {
@@ -257,7 +264,7 @@ bftps_transfer_loop_status_t bftps_transfer_file_retrieve(bftps_session_context_
         // we can try to send more data
         session->dataBufferPosition += rc;
         return BFTPS_TRANSFER_LOOP_STATUS_CONTINUE;
-    }
+    //}
 }
 
 // store a file from the client
@@ -268,7 +275,7 @@ bftps_transfer_loop_status_t bftps_transfer_file_store(bftps_session_context_t *
     if (session->dataBufferPosition == session->dataBufferSize) {
         // we have written all the received data, so try to get some more
         rc = recv(session->dataFd, session->dataBuffer, sizeof (session->dataBuffer),
-                /*MSG_DONTWAIT | MSG_NOSIGNAL*/0);
+                MSG_DONTWAIT | MSG_NOSIGNAL);
         if (0>= rc) {
             // can't read any more data
             if (0 > rc) {
@@ -363,6 +370,10 @@ int bftps_transfer_file(bftps_session_context_t *session, const char *args,
 
         session->dataBufferPosition = 0;
         session->dataBufferSize = 0;
+        session->filenameRefresh = true;
+        strncpy(session->filename, session->dataBuffer, sizeof(session->filename));
+
+        bftps_file_transfer_store(session);
 
         return 0;
     }

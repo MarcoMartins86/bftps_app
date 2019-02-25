@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-    extern void time_sleep(int time_ms);
+    extern void time_sleep(unsigned int time_ms);
 
 
 #ifdef __cplusplus

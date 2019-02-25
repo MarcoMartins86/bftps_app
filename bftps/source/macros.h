@@ -19,13 +19,13 @@ extern "C" {
 #ifdef _3DS
 #define CONSOLE_LOG_INLINE(fmt,...) \
 { \
-    char str_log_buffer[4096]; \
+    static char str_log_buffer[4096]; \
     sprintf(str_log_buffer, fmt, ##__VA_ARGS__); \
     printf("%s", str_log_buffer); \
 }
 #define CONSOLE_LOG(fmt,...) \
 { \
-    char str_log_buffer[4096]; \
+    static char str_log_buffer[4096]; \
     sprintf(str_log_buffer, fmt, ##__VA_ARGS__); \
     printf("%s\n", str_log_buffer); \
 }

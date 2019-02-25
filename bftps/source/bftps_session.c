@@ -16,12 +16,18 @@
 
 #define POLL_UNKNOWN (~(POLLIN|POLLPRI|POLLOUT))
 
-int bftps_session_init(bftps_session_context_t* session, int fd_listen) {
-    // Check if session is valid and its mode is not set already, also validate
+extern void bftps_file_transfer_remove(bftps_session_context_t* session);
+
+int bftps_session_init(bftps_session_context_t** p_session, int fd_listen) {
+    // Check if pointer to receive the new session is valid, also validate
     // the file descriptor
-    if (!session || session->mode != BFTPS_SESSION_MODE_INVALID || 0 > fd_listen)
+    if (!p_session || *p_session || (0 > fd_listen))
         return EINVAL;
 
+    bftps_session_context_t* session = malloc(sizeof(bftps_session_context_t));
+    if(NULL == session)
+        return ENOMEM;
+    
     int nErrorCode = 0;
 
     // accept connection, saving the client connection address in the session
@@ -53,8 +59,9 @@ int bftps_session_init(bftps_session_context_t* session, int fd_listen) {
                 BFTPS_TRANSFER_DIR_MLST_SIZE |
                 BFTPS_TRANSFER_DIR_MLST_MODIFY |
                 BFTPS_TRANSFER_DIR_MLST_PERM;
-        session->fileBig = false;
-        session->fileBigIO = NULL;
+        //session->fileBig = false;
+        //session->fileBigIO = NULL;
+        session->filenameRefresh = false;
 #ifdef _USE_FD_TRANSFER
         session->fileFd = -1;
 #else
@@ -62,6 +69,7 @@ int bftps_session_init(bftps_session_context_t* session, int fd_listen) {
 #endif
         session->filepos = 0;
         session->filesize = 0;
+        session->next = NULL;
 
         CONSOLE_LOG("Accepted connection from %s:%u",
                 inet_ntoa(session->pasvAddress.sin_addr),
@@ -73,6 +81,12 @@ int bftps_session_init(bftps_session_context_t* session, int fd_listen) {
             CONSOLE_LOG("Failed to send \"Hello!\": %d", nErrorCode);
         }
     }
+    
+    // Check if something has failed or not
+    if(FAILED(nErrorCode))
+        free(session);
+    else
+        *p_session = session;
 
     return nErrorCode;
 }
@@ -83,9 +97,6 @@ int bftps_session_poll(bftps_session_context_t *session) {
 
     if (session->mode == BFTPS_SESSION_MODE_INVALID)
         return 0;
-
-    if (session->mode == BFTPS_SESSION_MODE_DESTROY)
-        return bftps_session_destroy(session);
 
     if (session->commandFd == -1)
         return EINVAL;
@@ -240,11 +251,13 @@ int bftps_session_transfer(bftps_session_context_t *session) {
 int bftps_session_destroy(bftps_session_context_t* session) {
     if (!session)
         return EINVAL;
+    
+    // Supposedly all connections where already closed when setting the mode
+    // in bftps_session_mode_set, so let's just free the memory
+    
+    free(session);
 
-    int nErrorCode = bftps_socket_destroy(&session->commandFd, true);
-    session->mode = BFTPS_SESSION_MODE_INVALID;
-
-    return nErrorCode;
+    return 0;
 }
 
 // open current working directory for ftp session
@@ -317,6 +330,9 @@ int bftps_session_close_data(bftps_session_context_t *session) {
 // close open file for ftp session
 
 int bftps_session_close_file(bftps_session_context_t *session) {
+    // we should remove this transfer information
+    bftps_file_transfer_remove(session);
+    
     int nErrorCode = 0;
 #ifdef _USE_FD_TRANSFER
     if (-1 != session->fileFd) {
