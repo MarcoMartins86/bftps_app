@@ -36,8 +36,7 @@ CFLAGS		:=	-fPIC -Wall -Wno-missing-braces -mword-relocations \
 			-Wno-format-overflow $(ARCH)
 
 CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS -D_LARGEFILE64_SOURCE \
-			-D_FILE_OFFSET_BITS=64 -D__LARGE64_FILES \
-                        -D_USE_FD_TRANSFER
+			-D_FILE_OFFSET_BITS=64 -D__LARGE64_FILES
 
 CFLAGS 		+= 	${cflags.${BUILD}}
 

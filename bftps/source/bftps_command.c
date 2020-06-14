@@ -83,7 +83,7 @@ static bftps_command_t bftps_commands[] = {
 #define FTP_COMMAND(x) { #x, x, }
     // ftp alias
 #define FTP_ALIAS(x,y) { #x, y, }
-    
+
     FTP_COMMAND(ABOR),
     FTP_COMMAND(ALLO),
     FTP_COMMAND(APPE),
@@ -146,7 +146,7 @@ int bftps_command_cmp(const void *p1, const void *p2) {
 
 in_port_t bftps_command_next_data_port(void) {
 #ifdef _3DS
-    static in_port_t dataPort = DATA_PORT; 
+    static in_port_t dataPort = DATA_PORT;
     if (++dataPort >= 10000)
         dataPort = DATA_PORT;
     return dataPort;
@@ -156,6 +156,7 @@ in_port_t bftps_command_next_data_port(void) {
 }
 
 #ifdef __GNUC__
+
 __attribute__ ((format(printf, 3, 4)))
 #endif
 int bftps_command_send_response(bftps_session_context_t *session,
@@ -343,13 +344,10 @@ int bftps_command_receive(bftps_session_context_t *session, int events) {
             session->timestamp = time(NULL);
 
             // execute the command
-            if (command == NULL) {  
-                if(*args)
-                {
+            if (command == NULL) {
+                if (*args) {
                     CONSOLE_LOG("Unimplemented command: %s %s", key.name, args);
-                }
-                else
-                {
+                } else {
                     CONSOLE_LOG("Unimplemented command: %s", key.name);
                 }
                 // send header
@@ -505,6 +503,7 @@ FTP_DECLARE(CDUP) {
 }
 
 // change working directory
+
 FTP_DECLARE(CWD) {
     CONSOLE_LOG("CWD %s", args ? args : "");
 
@@ -512,13 +511,13 @@ FTP_DECLARE(CWD) {
 
     // is equivalent to CDUP
     if (strcmp(args, "..") == 0) {
-        bftps_common_cd_up(session);        
+        bftps_common_cd_up(session);
         return bftps_command_send_response(session, 200, "OK\r\n");
     }
 
     int nErrorCode = 0;
     // build the new cwd path
-    if (FAILED(nErrorCode = bftps_common_build_path(session, session->cwd, args))) {        
+    if (FAILED(nErrorCode = bftps_common_build_path(session, session->cwd, args))) {
         return bftps_command_send_response(session, 553, "%s\r\n", strerror(nErrorCode));
     }
 
@@ -526,12 +525,12 @@ FTP_DECLARE(CWD) {
     struct stat st;
     if (0 != stat(session->dataBuffer, &st)) {
         nErrorCode = errno;
-        CONSOLE_LOG("stat '%s': %d %s", session->dataBuffer, nErrorCode, strerror(nErrorCode));        
+        CONSOLE_LOG("stat '%s': %d %s", session->dataBuffer, nErrorCode, strerror(nErrorCode));
         return bftps_command_send_response(session, 550, "unavailable\r\n");
     }
 
     // make sure it is a directory
-    if (!S_ISDIR(st.st_mode)) {        
+    if (!S_ISDIR(st.st_mode)) {
         return bftps_command_send_response(session, 553, "not a directory\r\n");
     }
 
@@ -618,7 +617,7 @@ FTP_DECLARE(LIST) {
 // get last modification time
 
 FTP_DECLARE(MDTM) {
-    CONSOLE_LOG("MDTM %s", args ? args : "");    
+    CONSOLE_LOG("MDTM %s", args ? args : "");
 
     bftps_session_mode_set(session, BFTPS_SESSION_MODE_COMMAND, 0);
 
@@ -631,7 +630,7 @@ FTP_DECLARE(MDTM) {
     time_t t_mtime;
 #ifdef _3DS
     uint64_t mtime;
-    if ( R_FAILED(sdmc_getmtime(session->dataBuffer, &mtime))) {
+    if (R_FAILED(archive_getmtime(session->dataBuffer, &mtime))) {
         return bftps_command_send_response(session, 550, "Error getting mtime\r\n");
     }
     t_mtime = mtime;
@@ -675,9 +674,9 @@ FTP_DECLARE(MKD) {
     if (0 != mkdir(session->dataBuffer, 0755)) {
         // mkdir failure
         int nErrorCode = errno;
-        if(nErrorCode == EEXIST)
+        if (nErrorCode == EEXIST)
             return bftps_command_send_response(session, 553, "%s\r\n", strerror(errno));
-        CONSOLE_LOG("mkdir: %d %s", nErrorCode, strerror(nErrorCode));        
+        CONSOLE_LOG("mkdir: %d %s", nErrorCode, strerror(nErrorCode));
         return bftps_command_send_response(session, 550, "failed to create directory\r\n");
     }
 
@@ -773,6 +772,7 @@ FTP_DECLARE(NOOP) {
 }
 
 // set options - mostly for MLST information retrieval
+
 FTP_DECLARE(OPTS) {
     CONSOLE_LOG("OPTS %s", args ? args : "");
 
@@ -791,7 +791,7 @@ FTP_DECLARE(OPTS) {
         static const struct {
             const char *name;
             bftps_transfer_dir_mlst_flags_t flag;
-        } mlst_flags[] ={
+        } mlst_flags[] = {
             { "Type;", BFTPS_TRANSFER_DIR_MLST_TYPE,},
             { "Size;", BFTPS_TRANSFER_DIR_MLST_SIZE,},
             { "Modify;", BFTPS_TRANSFER_DIR_MLST_MODIFY,},
@@ -860,12 +860,11 @@ FTP_DECLARE(PASV) {
         CONSOLE_LOG("Failed to create socket for PASV: %d %s", nErrorCode, strerror(nErrorCode))
         return bftps_command_send_response(session, 451, "\r\n");
     }
-    
+
     // set the socket options
     if (FAILED(nErrorCode = bftps_socket_options_increase_buffers(session->pasvFd))) {
         // failed to set socket options
-        CONSOLE_LOG("Failed to increase the buffer size: %d %s", nErrorCode,
-                strerror(nErrorCode));
+        CONSOLE_LOG("Failed to increase the buffer size: %d %s", nErrorCode, strerror(nErrorCode));
         bftps_session_close_pasv(session);
         return bftps_command_send_response(session, 451, "\r\n");
     }
@@ -873,12 +872,11 @@ FTP_DECLARE(PASV) {
     session->pasvAddress.sin_port = htons(bftps_command_next_data_port());
 
     // bind to the port
-    if (0 != bind(session->pasvFd, (struct sockaddr*) &session->pasvAddress,
-            sizeof (session->pasvAddress))) {
+
+    if (0 != bind(session->pasvFd, (struct sockaddr*) &session->pasvAddress, sizeof (session->pasvAddress))) {
         // failed to bind
         nErrorCode = errno;
-        CONSOLE_LOG("Failed to bind to a new port: %d %s", nErrorCode,
-                strerror(nErrorCode));
+        CONSOLE_LOG("Failed to bind to a new port: %d %s", nErrorCode, strerror(nErrorCode));
         bftps_session_close_pasv(session);
         return bftps_command_send_response(session, 451, "\r\n");
     }
@@ -926,18 +924,19 @@ FTP_DECLARE(PASV) {
             *p = ',';
     }
 
-    return bftps_command_send_response(session, 227, "%s\r\n", buffer);        
+    return bftps_command_send_response(session, 227, "%s\r\n", buffer);
 }
 
 // provide an address for the server to connect to
+
 FTP_DECLARE(PORT) {
-    CONSOLE_LOG("PORT %s", args ? args : "");    
+    CONSOLE_LOG("PORT %s", args ? args : "");
 
     // reset the state
     bftps_session_mode_set(session, BFTPS_SESSION_MODE_COMMAND,
             BFTPS_SESSION_MODE_SET_FLAG_CLOSE_PASV |
             BFTPS_SESSION_MODE_SET_FLAG_CLOSE_DATA);
-    session->flags &= ~(BFTPS_SESSION_MODE_SET_FLAG_CLOSE_PASV | 
+    session->flags &= ~(BFTPS_SESSION_MODE_SET_FLAG_CLOSE_PASV |
             BFTPS_SESSION_MODE_SET_FLAG_CLOSE_DATA);
 
     // dup the args since they are const and we need to change it
@@ -964,14 +963,14 @@ FTP_DECLARE(PORT) {
     // make sure we got the right number of values
     if (commas != 5) {
         free(addrstr);
-        
+
         return bftps_command_send_response(session, 501, "%s\r\n", strerror(EINVAL));
     }
 
     // parse the address
     struct sockaddr_in addr;
     if (0 == inet_aton(addrstr, &addr.sin_addr)) {
-        free(addrstr);        
+        free(addrstr);
         return bftps_command_send_response(session, 501, "%s\r\n", strerror(EINVAL));
     }
 
@@ -981,7 +980,7 @@ FTP_DECLARE(PORT) {
     for (p = portstr; *p; ++p) {
         if (!isdigit((int) *p)) {
             if (p == portstr || *p != '.' || val > 0xFF) {
-                free(addrstr);               
+                free(addrstr);
                 return bftps_command_send_response(session, 501, "%s\r\n", strerror(EINVAL));
             }
             port <<= 8;
@@ -995,7 +994,7 @@ FTP_DECLARE(PORT) {
 
     // validate the port
     if (val > 0xFF || port > 0xFF) {
-        free(addrstr);      
+        free(addrstr);
         return bftps_command_send_response(session, 501, "%s\r\n", strerror(EINVAL));
     }
     port <<= 8;
@@ -1010,8 +1009,8 @@ FTP_DECLARE(PORT) {
     memcpy(&session->dataAddress, &addr, sizeof (addr));
 
     // we are ready to connect to the client
-    session->flags |= BFTPS_SESSION_FLAG_PORT;    
- 
+    session->flags |= BFTPS_SESSION_FLAG_PORT;
+
     return bftps_command_send_response(session, 200, "OK\r\n");
 }
 
@@ -1060,7 +1059,7 @@ FTP_DECLARE(QUIT) {
     // disconnect from the client
     bftps_command_send_response(session, 221, "disconnecting\r\n");
     // destroy this session
-    bftps_session_mode_set(session, BFTPS_SESSION_MODE_DESTROY, 0); 
+    bftps_session_mode_set(session, BFTPS_SESSION_MODE_DESTROY, 0);
 
     return 0;
 }
@@ -1073,7 +1072,7 @@ FTP_DECLARE(REST) {
     bftps_session_mode_set(session, BFTPS_SESSION_MODE_COMMAND, 0);
 
     // make sure an argument is provided
-    if (args == NULL) {        
+    if (args == NULL) {
         return bftps_command_send_response(session, 504, "invalid argument\r\n");
     }
 
@@ -1081,18 +1080,18 @@ FTP_DECLARE(REST) {
     const char *p;
     uint64_t pos = 0;
     for (p = args; *p; ++p) {
-        if (!isdigit((int) *p)) {            
+        if (!isdigit((int) *p)) {
             return bftps_command_send_response(session, 504, "invalid argument\r\n");
         }
 
-        if (UINT64_MAX / 10 < pos) {            
+        if (UINT64_MAX / 10 < pos) {
             return bftps_command_send_response(session, 504, "invalid argument\r\n");
         }
 
         pos *= 10;
 
         if (UINT64_MAX - (*p - '0') < pos) {
-           return bftps_command_send_response(session, 504, "invalid argument\r\n");
+            return bftps_command_send_response(session, 504, "invalid argument\r\n");
         }
 
         pos += (*p - '0');
@@ -1138,15 +1137,15 @@ FTP_DECLARE(RMD) {
 }
 
 // rename from - Must be followed by RNTO
- 
+
 FTP_DECLARE(RNFR) {
-    CONSOLE_LOG("RNFR %s", args ? args : ""); 
+    CONSOLE_LOG("RNFR %s", args ? args : "");
 
     bftps_session_mode_set(session, BFTPS_SESSION_MODE_COMMAND, 0);
 
     // build the path to rename from
     int nErrorCode = 0;
-    if (FAILED( nErrorCode = bftps_common_build_path(session, session->cwd, args))) {
+    if (FAILED(nErrorCode = bftps_common_build_path(session, session->cwd, args))) {
         return bftps_command_send_response(session, 553, "%s\r\n", strerror(nErrorCode));
     }
 
@@ -1167,14 +1166,14 @@ FTP_DECLARE(RNFR) {
 // rename to - Must be preceded by RNFR
 
 FTP_DECLARE(RNTO) {
-    CONSOLE_LOG("RNTO %s", args ? args : "");  
+    CONSOLE_LOG("RNTO %s", args ? args : "");
     static char rnfr[BFTPS_SESSION_TRANSFER_BUFFER_SIZE]; // rename-from buffer
 
     bftps_session_mode_set(session, BFTPS_SESSION_MODE_COMMAND, 0);
-    
+
     // make sure the previous command was RNFR
     if (!(session->flags & BFTPS_SESSION_FLAG_RENAME)) {
-       return bftps_command_send_response(session, 503, "Bad sequence of commands\r\n");
+        return bftps_command_send_response(session, 503, "Bad sequence of commands\r\n");
     }
 
     // clear the rename state
@@ -1204,14 +1203,14 @@ FTP_DECLARE(RNTO) {
 // get file size
 
 FTP_DECLARE(SIZE) {
-    CONSOLE_LOG("SIZE %s", args ? args : "");    
+    CONSOLE_LOG("SIZE %s", args ? args : "");
 
     bftps_session_mode_set(session, BFTPS_SESSION_MODE_COMMAND, 0);
 
     // build the path to stat
     int nErrorCode = 0;
     if (FAILED(nErrorCode = bftps_common_build_path(session, session->cwd, args))) {
-        return bftps_command_send_response(session, 553, "%s\r\n", strerror(nErrorCode));   
+        return bftps_command_send_response(session, 553, "%s\r\n", strerror(nErrorCode));
     }
     struct stat st;
     int rc = stat(session->dataBuffer, &st);
@@ -1227,9 +1226,10 @@ FTP_DECLARE(SIZE) {
 // current transfer status. If no argument is supplied, and no transfer
 // is occurring, get the server status. If an argument is supplied, this
 // is equivalent to LIST, except the data is sent over the command socket.
+
 FTP_DECLARE(STAT) {
     CONSOLE_LOG("STAT %s", args ? args : "");
-    
+
     time_t uptime = time(NULL) - bftps_start_time();
     int hours = uptime / 3600;
     int minutes = (uptime / 60) % 60;
@@ -1263,7 +1263,7 @@ FTP_DECLARE(STAT) {
 // store a file - Requires a PASV or PORT connection
 
 FTP_DECLARE(STOR) {
-    CONSOLE_LOG("STOU %s", args ? args : "");
+    CONSOLE_LOG("STOR %s", args ? args : "");
 
     // open the file to store
     return bftps_transfer_file(session, args, BFTPS_TRANSFER_FILE_STOR);
@@ -1288,7 +1288,7 @@ FTP_DECLARE(STRU) {
     bftps_session_mode_set(session, BFTPS_SESSION_MODE_COMMAND, 0);
 
     // we only support F (no structure) mode
-    if (strcasecmp(args, "F") == 0) {        
+    if (strcasecmp(args, "F") == 0) {
         return bftps_command_send_response(session, 200, "OK\r\n");
     }
 

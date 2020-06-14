@@ -46,27 +46,16 @@ typedef enum {
     BFTPS_MODE_RESTARTING
 } bftps_mode_t;
 
-typedef enum {
-    FILE_TRANSFER_INVALID,
-    FILE_TRANSFER_STORED,
-    FILE_TRANSFER_STORING,
-    FILE_TRANSFER_READ,
-    FILE_TRANSFER_READING,
-} bftps_file_transfer_wrapper_mode_t;
-
 typedef struct _bftps_file_transfer_ext_t {
     bftps_file_transfer_mode_t mode;
     unsigned int fileSize; // This is only valid for sending files
     unsigned int filePosition;
     struct _bftps_file_transfer_ext_t* next;
     char name[MAX_PATH];
-    bftps_session_context_t* id; // we will use the file transfer session as ID
+    const bftps_session_context_t* id; // we will use the file transfer session as ID only
+    bool ended;
+    bool remove;
 } bftps_file_transfer_ext_t;
-
-typedef struct {
-    bftps_file_transfer_ext_t* fileTransfer;
-    bftps_file_transfer_wrapper_mode_t mode;
-} bftps_file_transfer_wrapper_t; 
 
 typedef struct {
     bftps_mode_t mode;
@@ -77,11 +66,10 @@ typedef struct {
 #ifdef _3DS
     bool socInit;
 #endif
-    bool wroteFileTransfer;
     bftps_session_context_t *sessions;
-    bftps_file_transfer_wrapper_t fileTransferBuffer[2];
-    unsigned int readIndex;
-    unsigned int writeIndex;
+    bftps_file_transfer_ext_t *filesTransferInfo;
+    bftps_file_transfer_ext_t **filesTransferInfoLastElement;
+    spinlock_t filesTransferLock;
 } bftps_context_t;
 
 THREAD_CALLBACK_DEFINITION(bftps_worker_thread, arg) {
@@ -267,17 +255,7 @@ BFTPS_WORKER_THREAD_ERROR_CLEANUP:
     THREAD_CALLBACK_RETURN(nErrorCode);
 }
 
-static bftps_context_t* gp_bftpsContext = NULL; /*{
-    BFTPS_MODE_INVALID, // mode
-    NULL, // thread
-    NULL, // event
-    0, // sessionsNumber
-    0, // startTime
-#ifdef _3DS
-    false,
-#endif
-    {0} // sessions
-};*/
+static bftps_context_t* gp_bftpsContext = NULL;
 
 int bftps_start() {
     CONSOLE_LOG("Start server");
@@ -296,13 +274,9 @@ int bftps_start() {
     gp_bftpsContext->startTime = 0;
     gp_bftpsContext->name[0] = '\0';
     gp_bftpsContext->sessions = NULL;
-    gp_bftpsContext->fileTransferBuffer[0].fileTransfer = NULL;
-    gp_bftpsContext->fileTransferBuffer[0].mode = FILE_TRANSFER_INVALID;
-    gp_bftpsContext->fileTransferBuffer[1].fileTransfer = NULL;
-    gp_bftpsContext->fileTransferBuffer[1].mode = FILE_TRANSFER_INVALID;
-    gp_bftpsContext->readIndex = 0;
-    gp_bftpsContext->writeIndex =1;
-    gp_bftpsContext->wroteFileTransfer = false;
+    gp_bftpsContext->filesTransferInfo = NULL;
+    gp_bftpsContext->filesTransferInfoLastElement = &gp_bftpsContext->filesTransferInfo;
+    gp_bftpsContext->filesTransferLock = 0;
 
     int nErrorCode = 0;
 
@@ -310,8 +284,7 @@ int bftps_start() {
     if (FAILED(nErrorCode = event_create(&gp_bftpsContext->event)))
         goto BFTPS_START_ERROR_CLEANUP;
     // create the worker thread, that will be doing all the FTP work
-    if (FAILED(nErrorCode = thread_create(&gp_bftpsContext->thread,
-            bftps_worker_thread, gp_bftpsContext)))
+    if (FAILED(nErrorCode = thread_create(&gp_bftpsContext->thread, bftps_worker_thread, gp_bftpsContext)))
         goto BFTPS_START_ERROR_CLEANUP;
     // await for the event to be set inside the worker thread, so we know
     // that we are ready to continue or an error occurred
@@ -350,23 +323,14 @@ int bftps_stop() {
     // free the remaining allocated memory
     event_destroy(&gp_bftpsContext->event);
     {
-        bftps_file_transfer_ext_t* pFree = gp_bftpsContext->fileTransferBuffer[0].fileTransfer;
+        bftps_file_transfer_ext_t* pFree = gp_bftpsContext->filesTransferInfo;
         bftps_file_transfer_ext_t* next = NULL;
         while (pFree) {
             next = pFree->next;
             free(pFree);
             pFree = next;
         }
-    }
-    {
-        bftps_file_transfer_ext_t* pFree = gp_bftpsContext->fileTransferBuffer[1].fileTransfer;
-        bftps_file_transfer_ext_t* next = NULL;
-        while (pFree) {
-            next = pFree->next;
-            free(pFree);
-            pFree = next;
-        }
-    }    
+    }   
     free(gp_bftpsContext);
     gp_bftpsContext = NULL;
     CONSOLE_LOG("Stop server");
@@ -394,160 +358,119 @@ bool bftps_exiting() {
         return false;
 }
 
-void bftps_file_transfer_store_internal(bftps_session_context_t* session,
-        bftps_file_transfer_wrapper_t* file_transfer_wrapper) {
-    
-    // try to find this file transfer info to refresh with new values or create another
-    bftps_file_transfer_ext_t** fileTransfer = &file_transfer_wrapper->fileTransfer;
-    while (*fileTransfer) {
-        // we found it
-        if ((*fileTransfer)->id == session)
-            break;
-        // continue looking
-        fileTransfer = &(*fileTransfer)->next;
-    }
-    // check if we need to allocate new memory
-    bool bAllocatedNow = false;
-    if (NULL == (*fileTransfer)) {
-        *fileTransfer = malloc(sizeof(bftps_file_transfer_ext_t));
-        session->filenameRefresh = true; // to make sure we copy all values
-        bAllocatedNow = true;
-    }
-    
-    // recheck if the address is valid or not
-    if (*fileTransfer) {
-        // if it was just allocated we will initialize the next object to NULL
-        // and set its id
-        if(bAllocatedNow) {
-            (*fileTransfer)->id = session;
-            (*fileTransfer)->next = NULL;
-        }
-        
-        // if we need to refresh the file name we also need to refresh all other values
-        if (session->filenameRefresh) {
-            // the file name will always be on this buffer
-            strncpy((*fileTransfer)->name, session->filename, sizeof((*fileTransfer)->name));
-            
-            (*fileTransfer)->mode = session->flags & BFTPS_SESSION_FLAG_SEND ?
-                    FILE_SENDING : FILE_RECEIVING;
-
-            (*fileTransfer)->fileSize = session->filesize;
-            (*fileTransfer)->filePosition = session->filepos;
-
-            session->filenameRefresh = false;
-        } else { // we only need to refresh the file position
-            (*fileTransfer)->filePosition = session->filepos;
-        }
-    }
-}
-
 void bftps_file_transfer_store(bftps_session_context_t* session) {
     if (gp_bftpsContext) {
-        unsigned int index = gp_bftpsContext->writeIndex;
-        if (atomic_compare_swap(&gp_bftpsContext->fileTransferBuffer[index].mode,
-                FILE_TRANSFER_STORED, FILE_TRANSFER_STORING) ||
-                atomic_compare_swap(&gp_bftpsContext->fileTransferBuffer[index].mode,
-                FILE_TRANSFER_READ, FILE_TRANSFER_STORING) ||
-                atomic_compare_swap(&gp_bftpsContext->fileTransferBuffer[index].mode,
-                FILE_TRANSFER_INVALID, FILE_TRANSFER_STORING)) {
-            bftps_file_transfer_store_internal(session, &gp_bftpsContext->fileTransferBuffer[index]);
-            // restore the state
-            gp_bftpsContext->fileTransferBuffer[index].mode = FILE_TRANSFER_STORED;
-            gp_bftpsContext->wroteFileTransfer = true;
+        // try to find this file transfer info to refresh with new values or create another
+        bftps_file_transfer_ext_t* fileTransfer = gp_bftpsContext->filesTransferInfo;
+        while (fileTransfer) {
+            // we found it
+            if (fileTransfer->id == session)
+                break;
+            // continue looking
+            fileTransfer = fileTransfer->next;
         }
+
+        // check if we need to allocate new memory
+        if (NULL == fileTransfer) {
+            fileTransfer = malloc(sizeof (bftps_file_transfer_ext_t));
+            // check if the address is valid or not, don't give any error this will be called again
+            if (fileTransfer) {
+                // if it was just allocated we will initialize the next object to NULL and set its id
+                fileTransfer->id = session;
+                fileTransfer->next = NULL;
+                // we also need to set all values on the first time
+                // the file name will always be on this buffer
+                strncpy(fileTransfer->name, session->filename, sizeof (fileTransfer->name));
+                fileTransfer->mode = session->flags & BFTPS_SESSION_FLAG_SEND ? FILE_SENDING : FILE_RECEIVING;
+                fileTransfer->fileSize = session->filesize;
+                fileTransfer->filePosition = session->filepos;
+                fileTransfer->ended = false;
+                fileTransfer->remove = false;
+                // acquire the lock to write the new element in the list
+                spinlock_acquire(gp_bftpsContext->filesTransferLock);
+                (*gp_bftpsContext->filesTransferInfoLastElement) = fileTransfer; 
+                gp_bftpsContext->filesTransferInfoLastElement = &fileTransfer->next;
+                spinlock_release(gp_bftpsContext->filesTransferLock);
+                
+            }
+        } else {
+            // we only need to refresh the file position
+            fileTransfer->filePosition = session->filepos;
+            
+            //or the filename and everything else
+            if(atomic_compare_swap(&session->filenameRefresh, true, false))
+            {
+                strncpy(fileTransfer->name, session->filename, sizeof (fileTransfer->name));
+                fileTransfer->mode = session->flags & BFTPS_SESSION_FLAG_SEND ? FILE_SENDING : FILE_RECEIVING;
+                fileTransfer->fileSize = session->filesize;
+            }
+        } 
     }
 }
 
-void bftps_file_transfer_remove_internal(bftps_session_context_t* session,
-        bftps_file_transfer_wrapper_t* file_transfer_wrapper) {
-    bftps_file_transfer_ext_t** fileTransfer = &file_transfer_wrapper->fileTransfer;
-    while (*fileTransfer) {
-        // we found it
-        if ((*fileTransfer)->id == session) {
-            // save the pointer to the next one
-            bftps_file_transfer_ext_t* next = (*fileTransfer)->next;
-            // free it
-            free(*fileTransfer);
-            // restore the pointer to the next
-            *fileTransfer = next;
-            break;
-        }
-        // continue looking
-        fileTransfer = &(*fileTransfer)->next;
-    }
-}
-
-void bftps_file_transfer_remove(bftps_session_context_t* session) {
+void bftps_file_transfer_end(bftps_session_context_t* session) {
     if (gp_bftpsContext) {
-        // we will only remove when stored
-        unsigned int index = gp_bftpsContext->writeIndex;
-        if (atomic_compare_swap(&gp_bftpsContext->fileTransferBuffer[index].mode,
-                FILE_TRANSFER_STORED, FILE_TRANSFER_STORING)) {
-            bftps_file_transfer_store_internal(session, &gp_bftpsContext->fileTransferBuffer[index]);
-            // restore the state
-            gp_bftpsContext->fileTransferBuffer[index].mode = FILE_TRANSFER_STORED;
+        bftps_file_transfer_ext_t* fileTransfer = gp_bftpsContext->filesTransferInfo;
+        while (fileTransfer) {
+            // we found it
+            if (fileTransfer->id == session) {
+                fileTransfer->ended = true;
+                break;
+            }
+            // continue looking
+            fileTransfer = fileTransfer->next;
         }
     }
-}
-
-const bftps_file_transfer_t* bftps_file_transfer_retrieve_internal(
-        bftps_file_transfer_wrapper_t* file_transfer_wrapper) {
-
-    bftps_file_transfer_t* pReturn = NULL;
-    bftps_file_transfer_ext_t* fileTransfer = file_transfer_wrapper->fileTransfer;
-    bftps_file_transfer_t** fileTransferReturn = &pReturn;
-    while (fileTransfer) {
-        // allocate space for this file transfer info
-        *fileTransferReturn = malloc(sizeof (bftps_file_transfer_t));
-        // check that the allocation was successful
-        if (*fileTransferReturn) {
-            // copy the memory
-            memcpy(*fileTransferReturn, fileTransfer, sizeof (bftps_file_transfer_t));
-            // make sure next pointer, points to NULL
-            (*fileTransferReturn)->next = NULL;
-            // refresh the variable to be used in next iteration
-            fileTransferReturn = &(*fileTransferReturn)->next;
-        }
-        // save the pointer
-        bftps_file_transfer_ext_t* next = fileTransfer->next;
-        // free the memory
-        free(fileTransfer);
-        // move on to the next one
-        fileTransfer = next;
-    }
-
-    file_transfer_wrapper->fileTransfer = NULL; // all memory was freed
-
-    return pReturn;
 }
 
 const bftps_file_transfer_t* bftps_file_transfer_retrieve() {
-    const bftps_file_transfer_t* pReturn = NULL;
+    bftps_file_transfer_t* pReturn = NULL;
     if (gp_bftpsContext) {
-        // only continue if we have something to read
-        if (atomic_compare_swap(&gp_bftpsContext->wroteFileTransfer, true, false)) {
-            unsigned int index = gp_bftpsContext->readIndex;
+        bftps_file_transfer_ext_t* previousFileTransfer = NULL;
+        bftps_file_transfer_ext_t* fileTransfer = gp_bftpsContext->filesTransferInfo;
+        bftps_file_transfer_t** fileTransferReturn = &pReturn;
+        while (fileTransfer) {
+            if (fileTransfer->remove) {
+                // save the pointer to be freed
+                bftps_file_transfer_ext_t* aux = fileTransfer;
+                // acquire the lock to remove this element from the list
+                spinlock_acquire(gp_bftpsContext->filesTransferLock);
+                fileTransfer = fileTransfer->next;
+                // Check if it was the last element
+                if (NULL == fileTransfer) {
+                    // check if it was the only element in the list
+                    if (NULL == previousFileTransfer) {
+                        gp_bftpsContext->filesTransferInfo = NULL;
+                        gp_bftpsContext->filesTransferInfoLastElement = &gp_bftpsContext->filesTransferInfo;
+                    } else {
+                        previousFileTransfer->next = NULL;
+                        gp_bftpsContext->filesTransferInfoLastElement = &previousFileTransfer->next;
+                    }
+                } else if (NULL == previousFileTransfer) { //Check if it was the first element
+                    gp_bftpsContext->filesTransferInfo = fileTransfer;
+                } else {
+                    previousFileTransfer->next = fileTransfer;
+                }
+                spinlock_release(gp_bftpsContext->filesTransferLock);
+                free(aux);
+                continue;
+            }
 
-            if (atomic_compare_swap(&gp_bftpsContext->fileTransferBuffer[index].mode,
-                    FILE_TRANSFER_STORED, FILE_TRANSFER_READING)) {
-                pReturn = bftps_file_transfer_retrieve_internal(&gp_bftpsContext->fileTransferBuffer[index]);
-                // restore the state
-                gp_bftpsContext->fileTransferBuffer[index].mode = FILE_TRANSFER_READ;
-                
-                // even though we are reading we will set the variable again because
-                // there could be something to read on the other buffer although we
-                // did not write anything between calls
-                gp_bftpsContext->wroteFileTransfer = true;
+            // allocate space for this file transfer info
+            *fileTransferReturn = malloc(sizeof (bftps_file_transfer_t));
+            // check that the allocation was successful
+            if (*fileTransferReturn) {
+                // if the transfer has ended we will mark it to be removed on the next time this method is called
+                fileTransfer->remove = fileTransfer->ended;
+                // copy the memory
+                memcpy(*fileTransferReturn, fileTransfer, sizeof (bftps_file_transfer_t));
+                // make sure next pointer, points to NULL
+                (*fileTransferReturn)->next = NULL;
+                // refresh the variable to be used in next iteration
+                fileTransferReturn = &(*fileTransferReturn)->next;
             }
-            
-            // swap buffers
-            if (1 == index) {
-                gp_bftpsContext->writeIndex = 1;
-                gp_bftpsContext->readIndex = 0;
-            } else {
-                gp_bftpsContext->writeIndex = 0;
-                gp_bftpsContext->readIndex = 1;
-            }
+            previousFileTransfer = fileTransfer;
+            fileTransfer = fileTransfer->next;
         }
     }
     return pReturn;

@@ -311,8 +311,8 @@ bftps_transfer_loop_status_t bftps_transfer_dir_list(
             // the sdmc directory entry already has the type and size, so no need to do a slow stat
             u32 magic = *(u32*) session->dir->dirData->dirStruct;
             int nErrorCode = 0;
-            if (magic == SDMC_DIRITER_MAGIC) {
-                sdmc_dir_t *dir = (sdmc_dir_t*) session->dir->dirData->dirStruct;
+            if (magic == ARCHIVE_DIRITER_MAGIC) {
+                archive_dir_t *dir = (archive_dir_t*) session->dir->dirData->dirStruct;
                 FS_DirectoryEntry *entry = &dir->entry_data[dir->index];
 
                 if (entry->attributes & FS_ATTRIBUTE_DIRECTORY)
@@ -340,9 +340,9 @@ bftps_transfer_loop_status_t bftps_transfer_dir_list(
                 }
                 else if (getmtime) {
                     uint64_t mtime = 0;
-                    if (R_FAILED(nErrorCode = sdmc_getmtime(session->dataBuffer, &mtime)))
+                    if (R_FAILED(nErrorCode = archive_getmtime(session->dataBuffer, &mtime)))
                     {
-                        CONSOLE_LOG("sdmc_getmtime '%s': 0x%x", session->dataBuffer, nErrorCode);
+                        CONSOLE_LOG("archive_getmtime '%s': 0x%x", session->dataBuffer, nErrorCode);
                     }
                     else
                         st.st_mtime = mtime;

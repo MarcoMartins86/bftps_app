@@ -1,3 +1,5 @@
+#define _USE_FD_TRANSFER 1
+
 #include <stdio.h>
 #include <limits.h>
 #include <unistd.h>
@@ -23,7 +25,6 @@ int main(int argc, char* argv[]) {
     }
     gfxInitDefault();
     gfxSet3D(false);
-    sdmcWriteSafe(false);
 #ifdef _DEBUG
     consoleInit(GFX_TOP, NULL);
 #endif
@@ -31,6 +32,7 @@ int main(int argc, char* argv[]) {
     // Main loop
 #ifdef _3DS
     bftps_start();
+    
     while (aptMainLoop()) {
         gspWaitForVBlank();
         gfxSwapBuffers();

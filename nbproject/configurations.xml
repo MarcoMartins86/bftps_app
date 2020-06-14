@@ -54,6 +54,18 @@
           <buildCommand>${MAKE} -f Makefile 3ds_debug</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
+          <cTool>
+            <preprocessorList>
+              <Elem>_3DS</Elem>
+              <Elem>_DEBUG</Elem>
+            </preprocessorList>
+          </cTool>
+          <ccTool>
+            <preprocessorList>
+              <Elem>_3DS</Elem>
+              <Elem>_DEBUG</Elem>
+            </preprocessorList>
+          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>
@@ -500,11 +512,6 @@
               <Elem>_DEBUG</Elem>
             </preprocessorList>
           </cTool>
-          <ccTool>
-            <preprocessorList>
-              <Elem>_DEBUG</Elem>
-            </preprocessorList>
-          </ccTool>
         </makeTool>
         <preBuild>
           <preBuildCommandWorkingDir>.</preBuildCommandWorkingDir>

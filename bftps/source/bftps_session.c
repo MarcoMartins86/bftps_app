@@ -16,7 +16,7 @@
 
 #define POLL_UNKNOWN (~(POLLIN|POLLPRI|POLLOUT))
 
-extern void bftps_file_transfer_remove(bftps_session_context_t* session);
+extern void bftps_file_transfer_end(bftps_session_context_t* session);
 
 int bftps_session_init(bftps_session_context_t** p_session, int fd_listen) {
     // Check if pointer to receive the new session is valid, also validate
@@ -30,12 +30,10 @@ int bftps_session_init(bftps_session_context_t** p_session, int fd_listen) {
     
     int nErrorCode = 0;
 
-    // accept connection, saving the client connection address in the session
-    // pasv address to be used later if needed
+    /* accept connection, saving the client connection address in the session pasv address just to save memory since we will re-write this value below */
     int fdSession;
     socklen_t addressLenght = sizeof (session->pasvAddress);
-    fdSession = accept(fd_listen, (struct sockaddr*) &session->pasvAddress,
-            &addressLenght);
+    fdSession = accept(fd_listen, (struct sockaddr*) &session->pasvAddress, &addressLenght);
     if (0 > fdSession) {
         nErrorCode = errno;
         CONSOLE_LOG("Failed to accept new session: %d", nErrorCode);
@@ -71,14 +69,19 @@ int bftps_session_init(bftps_session_context_t** p_session, int fd_listen) {
         session->filesize = 0;
         session->next = NULL;
 
-        CONSOLE_LOG("Accepted connection from %s:%u",
-                inet_ntoa(session->pasvAddress.sin_addr),
-                ntohs(session->pasvAddress.sin_port));
+        CONSOLE_LOG("Accepted connection from %s:%u", inet_ntoa(session->pasvAddress.sin_addr), ntohs(session->pasvAddress.sin_port));
 
-        // send initiator response to client
-        if (FAILED(nErrorCode = bftps_command_send_response(session, 220,
-                "Hello!\r\n"))) {
-            CONSOLE_LOG("Failed to send \"Hello!\": %d", nErrorCode);
+        /* copy socket address to pasv address (own server address) to be used if PASV connection is requested */
+        addressLenght = sizeof (session->pasvAddress);
+        if (0 != getsockname(fdSession, (struct sockaddr*) &session->pasvAddress, &addressLenght)) {
+            CONSOLE_LOG("Failed to copy socket address to pasv address: %d %s", errno, strerror(errno));
+            nErrorCode = errno;
+            bftps_command_send_response(session, 451, "Failed to get connection info\r\n");
+        } else {
+            // send initiator response to client
+            if (FAILED(nErrorCode = bftps_command_send_response(session, 220, "Hello!\r\n"))) {
+                CONSOLE_LOG("Failed to send \"Hello!\": %d", nErrorCode);
+            }
         }
     }
     
@@ -330,8 +333,8 @@ int bftps_session_close_data(bftps_session_context_t *session) {
 // close open file for ftp session
 
 int bftps_session_close_file(bftps_session_context_t *session) {
-    // we should remove this transfer information
-    bftps_file_transfer_remove(session);
+    // we should mark this transfer information as ended
+    bftps_file_transfer_end(session);
     
     int nErrorCode = 0;
 #ifdef _USE_FD_TRANSFER

@@ -94,6 +94,13 @@ int bftps_transfer_file_open_write(bftps_session_context_t *session, bool append
         CONSOLE_LOG("open '%s': %d %s", session->dataBuffer, nErrorCode, strerror(nErrorCode));
         return nErrorCode;
     }
+    if (append) {
+        // get the file size
+        struct stat st;
+        if (0 == fstat(session->fileFd, &st)) {
+            session->filepos = st.st_size; // for showing the correct value on transfer info
+        }
+    }
 #else 
     const char *mode = "wb";
 
@@ -107,6 +114,14 @@ int bftps_transfer_file_open_write(bftps_session_context_t *session, bool append
         nErrorCode = errno;
         CONSOLE_LOG("fopen '%s': %d %s", session->dataBuffer, nErrorCode, strerror(nErrorCode));
         return nErrorCode;
+    }
+    
+    if (append) {
+        // get the file size
+        struct stat st;
+        if (0 == fstat(fileno(session->filep), &st)) {
+            session->filepos = st.st_size; // for showing the correct value on transfer info
+        }
     }
 
     // it's okay if this fails 
@@ -370,7 +385,7 @@ int bftps_transfer_file(bftps_session_context_t *session, const char *args,
 
         session->dataBufferPosition = 0;
         session->dataBufferSize = 0;
-        session->filenameRefresh = true;
+        session->filenameRefresh = true; // new file name was set
         strncpy(session->filename, session->dataBuffer, sizeof(session->filename));
 
         bftps_file_transfer_store(session);

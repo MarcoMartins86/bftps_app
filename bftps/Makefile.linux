@@ -26,7 +26,7 @@ CFLAGS		:=	-fPIC -Wall \
 			-fomit-frame-pointer -ffunction-sections
 
 CFLAGS		+=	$(INCLUDE) -Wno-missing-braces -D_LARGEFILE64_SOURCE \
-			-D_FILE_OFFSET_BITS=64 -D__LARGE64_FILES 
+			-D_FILE_OFFSET_BITS=64 -D__LARGE64_FILES
 
 CFLAGS 		+= 	${cflags.${BUILD}}
 

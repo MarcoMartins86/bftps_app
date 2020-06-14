@@ -64,7 +64,7 @@ extern "C" {
         bftps_transfer_dir_mlst_flags_t mlstFlags; /* session MLST flags */
         //bool fileBig; /* check if it is a big file or small */
         //file_io_context_t* fileBigIO; /* with big files we use this */
-        bool filenameRefresh; /* this will be used later to store file transfer info */
+        bool filenameRefresh; /* session could be re-used for other file */
         char filename[MAX_PATH]; /* where we will save the filename */
 #ifdef _USE_FD_TRANSFER
         int fileFd; /* file descriptor for the open file being transferred */
